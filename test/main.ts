@@ -245,9 +245,9 @@ test('.json() with 200 response and empty body', async t => {
 		response.status(200).end();
 	});
 
-	await t.throwsAsync(ky(server.url).json(), {
-		message: /Unexpected end of JSON input/,
-	});
+	const responseJson = await ky(server.url).json();
+
+	t.deepEqual(responseJson, '');
 
 	await server.close();
 });
@@ -263,7 +263,43 @@ test('.json() with 204 response and empty body', async t => {
 
 	const responseJson = await ky(server.url).json();
 
-	t.is(responseJson, '');
+	t.deepEqual(responseJson, '');
+
+	await server.close();
+});
+
+test('.json() with 202 response and empty body', async t => {
+	t.plan(2);
+
+	const server = await createHttpTestServer();
+	server.get('/', async (request, response) => {
+		t.is(request.headers.accept, 'application/json');
+		response.status(202).end();
+	});
+
+	const responseJson = await ky(server.url).json();
+
+	t.deepEqual(responseJson, '');
+
+	await server.close();
+});
+
+test('.json() with 202 response and valid body', async t => {
+	t.plan(2);
+
+	const server = await createHttpTestServer();
+	server.get('/', async (request, response) => {
+		t.is(request.headers.accept, 'application/json');
+		response.status(202).json({ foo: 'bar' });
+	});
+
+	const json = {
+		foo: 'bar'
+	};
+
+	const responseJson = await ky(server.url).json();
+
+	t.deepEqual(responseJson, json);
 
 	await server.close();
 });

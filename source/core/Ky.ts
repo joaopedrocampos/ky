@@ -87,7 +87,10 @@ export class Ky {
 					}
 				}
 
-				return response[type]();
+				return response[type]().catch((_err) => {
+					ky.request.headers.set('content-length', '0');
+					return '';
+				});
 			};
 		}
 
